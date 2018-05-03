@@ -1,0 +1,40 @@
+What is ScrapeIt?
+===
+ScrapeIt is a configuration driven web scraping python framework. The goal is to easily retrieve data from a web page and return the content.  
+
+
+Config Example
+---
+`example.yaml`
+```yaml
+python_website:
+  'urls':
+    homepage: https://www.python.org/
+  'selector': ['div', "class": "jobs-widget"]
+  'selector_is_unique': true
+  'use_regex': true
+  'match_after': 'Jobs'
+  'stop_matching_at': ''
+```
+
+Usage Example
+---
+```python
+import os
+
+from ruamel import yaml
+
+import scrapeit
+
+
+config_file = os.path.join('config', 'example.yaml')
+with open(config_file) as file:
+    config = yaml.safe_load(file)
+
+text = scrapeit.get_text('homepage', **config['python_website'])
+```
+Limitations
+---
+ScrapeIt is currently not equipped to handle auth. 
+
+The only data ScrapeIt currently is able to retrieve is text. 
