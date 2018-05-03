@@ -32,6 +32,10 @@ with open(config_file) as file:
     config = yaml.safe_load(file)
 
 text = scrapeit.get_text('homepage', **config['python_website'])
+print(text)
+```
+```
+Out: "Looking for work or have a Python related position that you're trying to hire for? Our relaunched community-run job board is the place to go.jobs.python.org"
 ```
 Limitations
 ---
