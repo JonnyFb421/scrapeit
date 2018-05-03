@@ -105,7 +105,7 @@ def get_target_from_soup(soup, **kwargs):
     """
     Uses the config to retrieve the desired text from the soup.
     :param soup: bs4 object
-    :param kwargs: yaml config file
+    :param kwargs: config file
     :return: String text from the matching elements
     """
     if kwargs['selector_is_unique']:
@@ -133,7 +133,7 @@ def get_text(url_key, **kwargs):
     """
     Use this method to return text from a matching selector
     :param url_key: String key to urls dictionary
-    :param kwargs: yaml config file
+    :param kwargs: config file
     :return: String text from the matching elements
     """
     url = kwargs['urls'][url_key]
