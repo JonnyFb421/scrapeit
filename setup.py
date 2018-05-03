@@ -1,7 +1,6 @@
 from setuptools import setup
 
-with open('version.txt') as file:
-    version = file.read().strip()
+version = '1.0.1'
 
 requirements = [
     'requests>=2.18.4',
