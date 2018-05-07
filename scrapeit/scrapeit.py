@@ -1,4 +1,5 @@
 import re
+import datetime
 import logging
 
 import requests
@@ -12,14 +13,31 @@ logging.basicConfig(
 )
 
 
-def set_regex_pattern(start, end):
+def convert_date_format_to_string(formatting):
+    time_format, offset = formatting
+    time = (
+            datetime.datetime.utcnow() - datetime.timedelta(days=offset)
+    ).strftime(time_format)
+    # TODO remove this lame hack and solve this for real
+    if time.split(',')[1][-2] == '0':
+        time = time.replace('0', '', 1)
+    return time
+
+
+def set_regex_pattern(start, end, start_strf, end_strf):
     """
     Sets a regular expression pattern that matches any text in-bet
-    :param start:
-    :param end: String
+    :param start: String to start matching text after
+    :param end: String to stop matching text before
+    :param start_strf: String strftime date formatting
+    :param end_strf: String strftime date formatting
     :return: String regular expression
     """
     regex_pattern = ''
+    if start_strf:
+        start = convert_date_format_to_string(start_strf)
+    if end_strf:
+        end = convert_date_format_to_string(end_strf)
     if start and end:
         regex_pattern = f"(?<={start}).*?(?={end})"
     elif start and not end:
@@ -29,15 +47,18 @@ def set_regex_pattern(start, end):
     return regex_pattern
 
 
-def parse_text_with_regex(match_start, match_end, text):
+def parse_text_with_regex(match_start, match_end, text, after_strftime=None, end_strftime=None):
     """
     Searches blob of text and grabs the text between start and end
     :param match_start: String pattern to start matching after
     :param match_end: String pattern to stop matching before
     :param text: String text to search
+    :param after_strftime: String date format and time offset
+    :param end_strftime: String date format and time offset
     :return: String the match or original text
     """
-    re_pattern = set_regex_pattern(match_start, match_end)
+    re_pattern = set_regex_pattern(match_start, match_end,
+                                   after_strftime, end_strftime)
     re_match = re.search(re_pattern, text, re.DOTALL)
     if re_match and re_match[0].strip():
         return re_match[0]
@@ -124,7 +145,9 @@ def get_target_from_soup(soup, **kwargs):
         website_text = parse_text_with_regex(
             kwargs['match_after'],
             kwargs['stop_matching_at'],
-            website_text
+            website_text,
+            after_strftime=kwargs.get('match_after_strftime'),
+            end_strftime=kwargs.get('stop_matching_at_strftime')
         )
     return website_text
 
