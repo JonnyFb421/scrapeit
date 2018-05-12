@@ -14,14 +14,24 @@ logging.basicConfig(
 
 
 def convert_date_format_to_string(formatting):
-    time_format, offset = formatting
+    """
+    Translates time format to real time to be used as
+    part of a regex search
+    :param formatting: List containing:
+        :param: time_format: String containing strftime
+        :param: extra_characters: String containing any characters that
+                follows after the returned date such as ': '
+        :param: offset: Int offsets the returned date by this many days
+    :return: String containing date followed by extra_characters
+    """
+    time_format, extra_characters, offset = formatting
     time = (
             datetime.datetime.utcnow() - datetime.timedelta(days=offset)
     ).strftime(time_format)
     # TODO remove this lame hack and solve this for real
     if time.split(',')[1][-2] == '0':
         time = time.replace('0', '', 1)
-    return time
+    return time + extra_characters
 
 
 def set_regex_pattern(start, end, start_strf, end_strf):
