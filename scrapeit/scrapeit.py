@@ -43,7 +43,14 @@ def convert_date_format_to_string(formatting, timezone):
     return time + extra_characters
 
 
-def set_regex_pattern(start, end, start_strf, end_strf, timezone):
+def find_matching_pattern(text, patterns):
+    for pattern in patterns:
+        if pattern in text:
+            return pattern
+    return ''
+
+
+def set_regex_pattern(start, end, text, start_strf, end_strf, timezone):
     """
     Sets a regular expression pattern that matches any text in-bet
     :param start: String to start matching text after
@@ -56,14 +63,18 @@ def set_regex_pattern(start, end, start_strf, end_strf, timezone):
     """
     regex_pattern = ''
     if start_strf:
-        start = convert_date_format_to_string(start_strf, timezone)
+        start = [convert_date_format_to_string(start_strf, timezone)]
     if end_strf:
-        end = convert_date_format_to_string(end_strf, timezone)
+        end = [convert_date_format_to_string(end_strf, timezone)]
     if start and end:
+        start = find_matching_pattern(text, start)
+        end = find_matching_pattern(text, end)
         regex_pattern = f"(?<={start}).*?(?={end})"
     elif start and not end:
+        start = find_matching_pattern(text, start)
         regex_pattern = f"(?<={start}).*"
     elif end and not start:
+        end = find_matching_pattern(text, start)
         regex_pattern = f".*?(?={end})"
     return regex_pattern
 
@@ -80,9 +91,9 @@ def parse_text_with_regex(match_start, match_end, text,
     :param end_strftime: String date format and time offset
     :return: String the match or original text
     """
-    re_pattern = set_regex_pattern(match_start, match_end,
-                                   after_strftime, end_strftime,
-                                   timezone)
+    re_pattern = set_regex_pattern(
+        match_start, match_end, text, after_strftime, end_strftime, timezone
+    )
     re_match = re.search(re_pattern, text, re.DOTALL)
     if re_match and re_match[0].strip():
         return re_match[0]
