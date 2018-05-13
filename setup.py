@@ -1,8 +1,9 @@
 from setuptools import setup
 
-version = '1.0.5'
+version = '1.0.6'
 
 requirements = [
+    'pytz>=2018.4',
     'requests>=2.18.4',
     'beautifulsoup4==4.6.0'
 

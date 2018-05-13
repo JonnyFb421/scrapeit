@@ -17,6 +17,8 @@ python_website:
   'stop_matching_at': ''
 #  match_after_strftime: ['%A, %b %d, %Y', '', 0]
 #  stop_matching_at_strftime: ['%A, %b, %d %Y', 1]
+#  timezone: 'America/Los_Angeles'
+
 ```
 
 Usage Example

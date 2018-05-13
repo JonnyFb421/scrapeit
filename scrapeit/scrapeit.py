@@ -2,6 +2,8 @@ import re
 import datetime
 import logging
 
+import pytz
+from pytz.reference import UTC
 import requests
 from requests import HTTPError
 from bs4 import BeautifulSoup
@@ -13,7 +15,7 @@ logging.basicConfig(
 )
 
 
-def convert_date_format_to_string(formatting):
+def convert_date_format_to_string(formatting, timezone):
     """
     Translates time format to real time to be used as
     part of a regex search
@@ -22,32 +24,41 @@ def convert_date_format_to_string(formatting):
         :param: extra_characters: String containing any characters that
                 follows after the returned date such as ': '
         :param: offset: Int offsets the returned date by this many days
+    :param timezone String containing timezone such as
+                    'America/Los_Angeles'
     :return: String containing date followed by extra_characters
     """
+    if timezone:
+        timezone = pytz.timezone(timezone)
+    else:
+        timezone = UTC
     time_format, extra_characters, offset = formatting
-    time = (
-            datetime.datetime.utcnow() - datetime.timedelta(days=offset)
-    ).strftime(time_format)
+    date_object = pytz.utc.localize(
+        datetime.datetime.utcnow() - datetime.timedelta(days=offset)
+    ).astimezone(timezone)
+    time = date_object.strftime(time_format)
     # TODO remove this lame hack and solve this for real
     if time.split(',')[1][-2] == '0':
         time = time.replace('0', '', 1)
     return time + extra_characters
 
 
-def set_regex_pattern(start, end, start_strf, end_strf):
+def set_regex_pattern(start, end, start_strf, end_strf, timezone):
     """
     Sets a regular expression pattern that matches any text in-bet
     :param start: String to start matching text after
     :param end: String to stop matching text before
     :param start_strf: String strftime date formatting
     :param end_strf: String strftime date formatting
+    :param timezone String containing timezone such as
+                    'America/Los_Angeles'
     :return: String regular expression
     """
     regex_pattern = ''
     if start_strf:
-        start = convert_date_format_to_string(start_strf)
+        start = convert_date_format_to_string(start_strf, timezone)
     if end_strf:
-        end = convert_date_format_to_string(end_strf)
+        end = convert_date_format_to_string(end_strf, timezone)
     if start and end:
         regex_pattern = f"(?<={start}).*?(?={end})"
     elif start and not end:
@@ -57,7 +68,9 @@ def set_regex_pattern(start, end, start_strf, end_strf):
     return regex_pattern
 
 
-def parse_text_with_regex(match_start, match_end, text, after_strftime=None, end_strftime=None):
+def parse_text_with_regex(match_start, match_end, text,
+                          after_strftime=None, end_strftime=None,
+                          timezone=None):
     """
     Searches blob of text and grabs the text between start and end
     :param match_start: String pattern to start matching after
@@ -68,7 +81,8 @@ def parse_text_with_regex(match_start, match_end, text, after_strftime=None, end
     :return: String the match or original text
     """
     re_pattern = set_regex_pattern(match_start, match_end,
-                                   after_strftime, end_strftime)
+                                   after_strftime, end_strftime,
+                                   timezone)
     re_match = re.search(re_pattern, text, re.DOTALL)
     if re_match and re_match[0].strip():
         return re_match[0]
@@ -157,7 +171,8 @@ def get_target_from_soup(soup, **kwargs):
             kwargs['stop_matching_at'],
             website_text,
             after_strftime=kwargs.get('match_after_strftime'),
-            end_strftime=kwargs.get('stop_matching_at_strftime')
+            end_strftime=kwargs.get('stop_matching_at_strftime'),
+            timezone=kwargs.get('timezone')
         )
     return website_text
 
