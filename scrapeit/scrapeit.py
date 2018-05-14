@@ -40,14 +40,16 @@ def convert_date_format_to_string(formatting, timezone):
     # TODO remove this lame hack and solve this for real
     if time.split(',')[1][-2] == '0':
         time = time.replace('0', '', 1)
+    print(time + extra_characters)
     return time + extra_characters
 
 
 def find_matching_pattern(text, patterns):
-    for pattern in patterns:
-        if pattern in text:
-            return pattern
-    return ''
+    if patterns:
+        for pattern in patterns:
+            print(f'pattern: {pattern} found in text: {pattern in text}')
+            if pattern in text:
+                return pattern
 
 
 def set_regex_pattern(start, end, text, start_strf, end_strf, timezone):
@@ -66,20 +68,19 @@ def set_regex_pattern(start, end, text, start_strf, end_strf, timezone):
         start = [convert_date_format_to_string(start_strf, timezone)]
     if end_strf:
         end = [convert_date_format_to_string(end_strf, timezone)]
+    start = find_matching_pattern(text, start)
+    end = find_matching_pattern(text, end)
     if start and end:
-        start = find_matching_pattern(text, start)
-        end = find_matching_pattern(text, end)
         regex_pattern = f"(?<={start}).*?(?={end})"
     elif start and not end:
-        start = find_matching_pattern(text, start)
         regex_pattern = f"(?<={start}).*"
     elif end and not start:
-        end = find_matching_pattern(text, start)
         regex_pattern = f".*?(?={end})"
+    print(regex_pattern)
     return regex_pattern
 
 
-def parse_text_with_regex(match_start, match_end, text,
+def parse_text_with_regex(text, match_start=None, match_end=None,
                           after_strftime=None, end_strftime=None,
                           timezone=None):
     """
@@ -95,6 +96,7 @@ def parse_text_with_regex(match_start, match_end, text,
         match_start, match_end, text, after_strftime, end_strftime, timezone
     )
     re_match = re.search(re_pattern, text, re.DOTALL)
+    print(f"re_match = re.search(\"{re_pattern}\", \"{text}\", re.DOTALL)")
     if re_match and re_match[0].strip():
         return re_match[0]
     else:
@@ -178,9 +180,9 @@ def get_target_from_soup(soup, **kwargs):
         )
     if kwargs['use_regex']:
         website_text = parse_text_with_regex(
-            kwargs['match_after'],
-            kwargs['stop_matching_at'],
             website_text,
+            match_start=kwargs.get('match_after'),
+            match_end=kwargs.get('stop_matching_at'),
             after_strftime=kwargs.get('match_after_strftime'),
             end_strftime=kwargs.get('stop_matching_at_strftime'),
             timezone=kwargs.get('timezone')
