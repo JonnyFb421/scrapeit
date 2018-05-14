@@ -40,14 +40,12 @@ def convert_date_format_to_string(formatting, timezone):
     # TODO remove this lame hack and solve this for real
     if time.split(',')[1][-2] == '0':
         time = time.replace('0', '', 1)
-    print(time + extra_characters)
     return time + extra_characters
 
 
 def find_matching_pattern(text, patterns):
     if patterns:
         for pattern in patterns:
-            print(f'pattern: {pattern} found in text: {pattern in text}')
             if pattern in text:
                 return pattern
 
@@ -76,7 +74,6 @@ def set_regex_pattern(start, end, text, start_strf, end_strf, timezone):
         regex_pattern = f"(?<={start}).*"
     elif end and not start:
         regex_pattern = f".*?(?={end})"
-    print(regex_pattern)
     return regex_pattern
 
 
@@ -96,7 +93,6 @@ def parse_text_with_regex(text, match_start=None, match_end=None,
         match_start, match_end, text, after_strftime, end_strftime, timezone
     )
     re_match = re.search(re_pattern, text, re.DOTALL)
-    print(f"re_match = re.search(\"{re_pattern}\", \"{text}\", re.DOTALL)")
     if re_match and re_match[0].strip():
         return re_match[0]
     else:
